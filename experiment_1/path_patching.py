@@ -1,4 +1,5 @@
 import random
+import os
 import fire
 import numpy as np
 from functools import partial
@@ -189,7 +190,12 @@ def pp_main(
 
     model, tokenizer = get_model_and_tokenizer(model_name)
     print("MODEL AND TOKENIZER LOADED")
-
+    # print cwd now:
+    print("Current working directory: ", os.getcwd())
+    if os.getcwd() == "/home/user/repos/finetuning":
+        os.chdir("experiment_1")
+    # print cwd + "../data/dataset.jsonl"
+    print("Current working directory: ", os.getcwd())
     dataloader = load_dataloader(
         model=model,
         tokenizer=tokenizer,
