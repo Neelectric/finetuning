@@ -146,7 +146,7 @@ def apply_pp(
 def pp_main(
     datafile: str = "../data/dataset.jsonl",
     num_boxes: int = 7,
-    model_name: str = "llama",
+    model_name: str = "CohereForAI/c4ai-command-r7b-12-2024", #"CohereForAI/c4ai-command-r7b-12-2024"
     num_samples: int = 300,
     n_value_fetcher: int = 20,  # Goat / FLoat circuit: 50, Llama circuit: 20
     n_pos_trans: int = 5,  # Goat / FLoat circuit: 20, Llama circuit: 5
@@ -236,7 +236,6 @@ def pp_main(
     # stop the script here, and print the path of where we saved
     print("Current working directory: ", os.getcwd())
     print("Results saved at: ", output_path)
-    return
 
     # Compute Position Transformer Heads
     print("COMPUTING POSITION TRANSMITTER HEADS...")
@@ -306,4 +305,5 @@ def pp_main(
 
 
 if __name__ == "__main__":
+    print("Launching path patching from command branch")
     fire.Fire(pp_main)

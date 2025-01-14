@@ -25,5 +25,5 @@ dependencies:
       - plotly==5.14.1
       - scikit-learn==1.2.2
       - sentencepiece==0.1.97
-      - transformers==4.35.0
+      - transformers==4.48.0
       - datasets==2.11.0

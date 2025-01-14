@@ -8,6 +8,8 @@ from collections import defaultdict
 
 import torch
 from transformers import (
+    AutoModelForCausalLM,
+    AutoTokenizer,
     LlamaForCausalLM,
     LlamaTokenizer,
 )
@@ -82,12 +84,28 @@ def get_model_and_tokenizer(model_name: str):
     Args:
         model_name (str): Name of the model to load.
     """
-
-    tokenizer = LlamaTokenizer.from_pretrained(
+    if model_name == "CohereForAI/c4ai-command-r7b-12-2024":
+        tokenizer = AutoTokenizer.from_pretrained(
+            model_name, 
+            padding_side="right"
+        )
+        print(tokenizer.eos_token_id) # seems to be 255001
+        print(tokenizer.pad_token_id) # seems to be 0 ....
+        # tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
+        model = AutoModelForCausalLM.from_pretrained(
+            model_name,
+            # torch_dtype=torch.float32,
+            device_map="auto",
+            )
+        print(model)
+        return model, tokenizer
+    else:
+        tokenizer = LlamaTokenizer.from_pretrained(
         "hf-internal-testing/llama-tokenizer", padding_side="right"
     )
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    tokenizer.padding_side = "right"
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
 
     if model_name == "llama":
         # path = "/data/nikhil_prakash/llama_weights/7B/"

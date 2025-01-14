@@ -1300,13 +1300,24 @@ def sample_box_data(tokenizer, num_samples, data_file):
 
     assert num_samples <= len(data)
     prompts, labels = [], []
+    i = 0
+    num_suitable = 0 # all final query entities from dataset.jsonl are tokenized into a single token by LlaMa tokenizer
+    # But CR7B tokenizer frequently tokenizes them into two tokens, so we must iterate through dataset until we find num_samples suitable examples
 
-    for i in range(num_samples):
+    while num_suitable < num_samples:
         label = data[i]["sentence"].split(" ")[-1][:-1]
         prompt = " ".join(data[i]["sentence"].split(" ")[:-1])
-        prompts.append(prompt)
-
-        labels.append(tokenizer.encode(label)[1])
+        
+        encoded = tokenizer.encode(label)
+        if len(encoded) == 2:
+            num_suitable += 1
+            decoded = [tokenizer.decode(input_id) for input_id in encoded]
+            labels.append(encoded[1])
+            prompts.append(prompt)
+            print(f"raw label: {label}")
+            print(f"label encoded, and then decoded: {decoded}")
+        i += 1
+        
 
     input_tokens = tokenizer(prompts, padding=True, return_tensors="pt")
     last_token_indices = input_tokens["attention_mask"].sum(dim=1) - 1
