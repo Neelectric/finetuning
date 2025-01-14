@@ -1314,8 +1314,8 @@ def sample_box_data(tokenizer, num_samples, data_file):
             decoded = [tokenizer.decode(input_id) for input_id in encoded]
             labels.append(encoded[1])
             prompts.append(prompt)
-            print(f"raw label: {label}")
-            print(f"label encoded, and then decoded: {decoded}")
+            # print(f"raw label: {label}")
+            # print(f"label encoded, and then decoded: {decoded}")
         i += 1
         
 
@@ -1357,6 +1357,9 @@ def load_pp_data(
             if i + j >= num_samples:
                 break
 
+            # detokenized_base_input_ids = tokenizer.decode(input_ids[i + j])
+            # print(f"Base: {detokenized_base_input_ids}")
+
             all_base_input_ids += [input_ids[i + j]]
             all_base_input_last_pos += [last_token_indices[i + j]]
             all_ctf_output_ids += [output_ids[i + j]]
@@ -1366,9 +1369,14 @@ def load_pp_data(
             )
             random_source_index += (j + 1) % num_boxes
             source_example = input_ids[random_source_index].clone()
+            # detokenized_source_input_ids_pre = tokenizer.decode(source_example)
+            # # print the input_id and the detokenised verison of each token in the source example:
+            # print(f"Source before randomisation : {[[int(input_id), tokenizer.decode(input_id)] for input_id in source_example]}")
 
             # Change the query box label with a random alphabet
             random_alphabet = chr(random.randint(65, 90))
+            if tokenizer.name_or_path == 'CohereForAI/c4ai-command-r7b-12-2024':
+                random_alphabet = " " + random_alphabet
             random_alphabet_token = tokenizer(
                 random_alphabet, return_tensors="pt"
             ).input_ids[0, 1]
@@ -1378,6 +1386,8 @@ def load_pp_data(
             all_source_input_last_pos += [last_token_indices[random_source_index]]
 
             all_intervention_ids += [0]
+            # detokenized_source_input_ids_post = tokenizer.decode(source_example)
+            # print(f"Source after randomisation : {detokenized_source_input_ids_post}")
 
     return (
         all_base_input_ids,

@@ -5,11 +5,13 @@ import sys
 import numpy as np
 from functools import partial
 from collections import defaultdict
+from typing import Union
 
 import torch
 from transformers import (
     AutoModelForCausalLM,
     AutoTokenizer,
+    Cohere2ForCausalLM,
     LlamaForCausalLM,
     LlamaTokenizer,
 )
@@ -89,16 +91,17 @@ def get_model_and_tokenizer(model_name: str):
             model_name, 
             padding_side="right"
         )
-        print(tokenizer.eos_token_id) # seems to be 255001
-        print(tokenizer.pad_token_id) # seems to be 0 ....
+        # print(tokenizer.eos_token_id) # seems to be 255001
+        # print(tokenizer.pad_token_id) # seems to be 0 ....
+        if tokenizer.pad_token_id is None:
+            print("No pad token id found in tokenizer!")
         # tokenizer.pad_token_id = tokenizer.eos_token_id
         tokenizer.padding_side = "right"
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
-            # torch_dtype=torch.float32,
-            device_map="auto",
+            torch_dtype=torch.bfloat16,
+            device_map="cuda:0",
             )
-        print(model)
         return model, tokenizer
     else:
         tokenizer = LlamaTokenizer.from_pretrained(
@@ -186,7 +189,7 @@ def load_dataloader(
 
 
 def get_caches(
-    model: LlamaForCausalLM,
+    model: Union[LlamaForCausalLM, Cohere2ForCausalLM],
     dataloader: torch.utils.data.DataLoader,
 ):
     """
@@ -198,6 +201,11 @@ def get_caches(
     """
 
     if model.config.architectures[0] == "LlamaForCausalLM":
+        hook_points = [
+            f"model.layers.{layer}.self_attn.o_proj"
+            for layer in range(model.config.num_hidden_layers)
+        ]
+    elif model.config.architectures[0] == "Cohere2ForCausalLM":
         hook_points = [
             f"model.layers.{layer}.self_attn.o_proj"
             for layer in range(model.config.num_hidden_layers)
@@ -334,6 +342,8 @@ def patching_sender_heads(
         )
 
         if model.config.architectures[0] == "LlamaForCausalLM":
+            layer_idx = int(layer.split(".")[2])
+        elif model.config.architectures[0] == "Cohere2ForCausalLM":
             layer_idx = int(layer.split(".")[2])
         else:
             layer_idx = int(layer.split(".")[4])

@@ -233,9 +233,7 @@ def pp_main(
         patching_scores=patching_scores, k=n_value_fetcher, largest=False
     )
     print(f"VALUE FETCHER HEADS: {value_fetcher_heads}\n")
-    # stop the script here, and print the path of where we saved
-    print("Current working directory: ", os.getcwd())
-    print("Results saved at: ", output_path)
+    
 
     # Compute Position Transformer Heads
     print("COMPUTING POSITION TRANSMITTER HEADS...")
