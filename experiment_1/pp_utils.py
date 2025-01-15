@@ -91,16 +91,14 @@ def get_model_and_tokenizer(model_name: str):
             model_name, 
             padding_side="right"
         )
-        # print(tokenizer.eos_token_id) # seems to be 255001
-        # print(tokenizer.pad_token_id) # seems to be 0 ....
-        if tokenizer.pad_token_id is None:
-            print("No pad token id found in tokenizer!")
+        # the tokenizer.eos_token_id seems to be 255001, and tokenizer.pad_token_id 
+        # seems to be 0. so we can comment out the following line
         # tokenizer.pad_token_id = tokenizer.eos_token_id
         tokenizer.padding_side = "right"
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=torch.bfloat16,
-            device_map="cuda:0",
+            device_map="cuda:0", # expects tensors to be on same device at some point...
             )
         return model, tokenizer
     else:
@@ -200,12 +198,7 @@ def get_caches(
         dataloader: dataloader containing clean and corrupt inputs.
     """
 
-    if model.config.architectures[0] == "LlamaForCausalLM":
-        hook_points = [
-            f"model.layers.{layer}.self_attn.o_proj"
-            for layer in range(model.config.num_hidden_layers)
-        ]
-    elif model.config.architectures[0] == "Cohere2ForCausalLM":
+    if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
         hook_points = [
             f"model.layers.{layer}.self_attn.o_proj"
             for layer in range(model.config.num_hidden_layers)
@@ -341,9 +334,7 @@ def patching_sender_heads(
             n_heads=model.config.num_attention_heads,
         )
 
-        if model.config.architectures[0] == "LlamaForCausalLM":
-            layer_idx = int(layer.split(".")[2])
-        elif model.config.architectures[0] == "Cohere2ForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer_idx = int(layer.split(".")[2])
         else:
             layer_idx = int(layer.split(".")[4])
@@ -452,7 +443,7 @@ def patching_receiver_heads(
         batch_size: batch size of the dataloader.
     """
 
-    if model.config.architectures[0] == "LlamaForCausalLM":
+    if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
         receiver_heads_in_curr_layer = [
             h for l, h in receiver_heads if l == int(layer.split(".")[2])
         ]
@@ -510,7 +501,7 @@ def get_receiver_layers(
         composition: composition to use for the receiver heads (k/q/v).
     """
 
-    if model.config.architectures[0] == "LlamaForCausalLM":
+    if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
         receiver_layers = list(
             set(
                 [
@@ -629,7 +620,7 @@ def get_mean_activations(
         batch_size=batch_size,
     )
 
-    if model.config.architectures[0] == "LlamaForCausalLM":
+    if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
         modules = [
             f"model.layers.{layer}.self_attn.o_proj"
             for layer in range(model.config.num_hidden_layers)
@@ -859,28 +850,28 @@ def get_circuit(
         value_fetcher_heads.remove(head)
 
     for layer_idx, head in value_fetcher_heads:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[0][layer].append(head)
 
     for layer_idx, head in pos_transmitter_heads:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[0][layer].append(head)
 
     for layer_idx, head in pos_detector_heads:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[2][layer].append(head)
 
     for layer_idx, head in struct_reader_heads:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
@@ -943,21 +934,21 @@ def get_random_circuit(
     ]
 
     for layer_idx, head in heads_at_last_pos:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         random_circuit[0][layer].append(head)
 
     for layer_idx, head in heads_at_query_box_pos:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         random_circuit[2][layer].append(head)
 
     for layer_idx, head in heads_at_prev_query_box_pos:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
@@ -991,7 +982,7 @@ def compute_pair_drop_values(
     greedy_res = defaultdict(lambda: defaultdict(float))
 
     for layer_idx_1, head_1 in tqdm(heads, total=len(heads), desc="Pair drop values"):
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer_1 = f"model.layers.{layer_idx_1}.self_attn.o_proj"
         else:
             layer_1 = f"base_model.model.model.layers.{layer_idx_1}.self_attn.o_proj"
@@ -999,7 +990,7 @@ def compute_pair_drop_values(
         circuit_components[rel_pos][layer_1].remove(head_1)
 
         for layer_idx_2, head_2 in heads:
-            if model.config.architectures[0] == "LlamaForCausalLM":
+            if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
                 layer_2 = f"model.layers.{layer_idx_2}.self_attn.o_proj"
             else:
                 layer_2 = (
@@ -1060,7 +1051,7 @@ def get_head_significance_score(
     for layer_idx, head in tqdm(
         heads, total=len(heads), desc="Head significance score"
     ):
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
@@ -1111,28 +1102,28 @@ def get_final_circuit(model, circuit_heads):
     circuit_components[-1] = defaultdict(list)
 
     for layer_idx, head in circuit_heads["value_fetcher"]:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[0][layer].append(head)
 
     for layer_idx, head in circuit_heads["pos_transmitter"]:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[0][layer].append(head)
 
     for layer_idx, head in circuit_heads["pos_detector"]:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[2][layer].append(head)
 
     for layer_idx, head in circuit_heads["struct_reader"]:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
