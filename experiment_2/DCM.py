@@ -288,7 +288,7 @@ def dcm_main(
             num_heads, valid_acc = [], []
             for lamb in [0.01]:
                 with torch.no_grad():
-                    mask = torch.load(f"{save_path}/{lamb}")
+                    mask = torch.load(f"{save_path}/{lamb}", weights_only=True)
                     mask.clamp_(0, 1)
                     rounded = torch.round(mask.data)
                     heads = compute_heads_from_mask(model, mask_dict, rounded)

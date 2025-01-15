@@ -40,7 +40,7 @@ def set_seed(seed):
 
 
 def minimality_main(
-    datafile: str = "./data/dataset.jsonl",
+    datafile: str = "../data/dataset.jsonl",
     circuit_root_path: str = "../experiment_1/results/path_patching/command_circuit", #llama_circuit
     num_boxes: int = 7,
     model_name: str = "CohereForAI/c4ai-command-r7b-12-2024", #CohereForAI/c4ai-command-r7b-12-2024
