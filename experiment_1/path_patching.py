@@ -274,7 +274,12 @@ def pp_main(
         hook_points=hook_points,
         rel_pos=2,
     )
-    torch.save(patching_scores, output_path + "pos_detector.pt")
+    print(f"patching_scores size is {patching_scores.size()}")
+    try:
+        torch.save(patching_scores, os.path.join(output_path, "pos_detector.pt"))
+    except RuntimeError as e:
+        print(f"Failed to save patching_scores: {e}")
+    # torch.save(patching_scores, output_path + "pos_detector.pt")
     pos_detector = compute_topk_components(
         patching_scores=patching_scores, k=n_pos_detect, largest=False
     )
