@@ -633,7 +633,7 @@ def get_mean_activations(
 
     mean_activations = {}
     with torch.no_grad():
-        for _, inp in enumerate(tqdm(ablation_dataloader)):
+        for _, inp in enumerate(tqdm(ablation_dataloader), dynamic_ncols=True):
             for k, v in inp.items():
                 if v is not None and isinstance(v, torch.Tensor):
                     inp[k] = v.to(model.device)
@@ -761,7 +761,7 @@ def eval_circuit_performance(
 
     correct_count, total_count = 0, 0
     with torch.no_grad():
-        for _, inp in enumerate(tqdm(dataloader)):
+        for _, inp in enumerate(tqdm(dataloader), dynamic_ncols=True):
             for k, v in inp.items():
                 if v is not None and isinstance(v, torch.Tensor):
                     inp[k] = v.to(model.device)
@@ -981,7 +981,7 @@ def compute_pair_drop_values(
 
     greedy_res = defaultdict(lambda: defaultdict(float))
 
-    for layer_idx_1, head_1 in tqdm(heads, total=len(heads), desc="Pair drop values"):
+    for layer_idx_1, head_1 in tqdm(heads, total=len(heads), desc="Pair drop values", dynamic_ncols=True):
         if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer_1 = f"model.layers.{layer_idx_1}.self_attn.o_proj"
         else:
@@ -1049,7 +1049,7 @@ def get_head_significance_score(
     res = {}
 
     for layer_idx, head in tqdm(
-        heads, total=len(heads), desc="Head significance score"
+        heads, total=len(heads), desc="Head significance score", dynamic_ncols=True
     ):
         if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"

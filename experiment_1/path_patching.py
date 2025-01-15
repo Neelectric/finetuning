@@ -72,7 +72,7 @@ def apply_pp(
     ).to(device)
     apply_softmax = torch.nn.Softmax(dim=-1)
 
-    for layer in tqdm(range(model.config.num_hidden_layers)):
+    for layer in tqdm(range(model.config.num_hidden_layers), dynamic_ncols=True):
         for head in range(model.config.num_attention_heads):
             with torch.no_grad():
                 for bi, inp in enumerate(dataloader):
@@ -190,11 +190,10 @@ def pp_main(
 
     model, tokenizer = get_model_and_tokenizer(model_name)
     print("MODEL AND TOKENIZER LOADED")
-    # print cwd now:
+    # just double-checking here that im in the right directory when debugging
     print("Current working directory: ", os.getcwd())
     if os.getcwd() == "/home/user/repos/finetuning":
         os.chdir("experiment_1")
-    # print cwd + "../data/dataset.jsonl"
     print("Current working directory: ", os.getcwd())
     dataloader = load_dataloader(
         model=model,
