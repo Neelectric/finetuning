@@ -41,9 +41,9 @@ def set_seed(seed):
 
 def minimality_main(
     datafile: str = "./data/dataset.jsonl",
-    circuit_root_path: str = "../experiment_1/results/path_patching/llama_circuit",
+    circuit_root_path: str = "../experiment_1/results/path_patching/command_circuit", #llama_circuit
     num_boxes: int = 7,
-    model_name: str = "llama",
+    model_name: str = "CohereForAI/c4ai-command-r7b-12-2024", #CohereForAI/c4ai-command-r7b-12-2024
     num_samples: int = 100,
     batch_size: int = 100,
     n_value_fetcher: int = 101,  # Goat circuit: 101, FLoat circuit: 102, Llama circuit: 58
@@ -53,7 +53,7 @@ def minimality_main(
     percentage: float = 0.3,
     minimality_threshold: float = 0.01,
     seed: int = 10,  # Goat circuit: 56, FLoat circuit: 10, Llama circuit: 10
-    results_path: str = "../experiment_1/results/minimality/llama_circuit",
+    results_path: str = "../experiment_1/results/minimality/command_circuit",
 ):
     """
     Computes the minimality scores for the heads in the model
@@ -181,7 +181,7 @@ def minimality_main(
         # Selecting heads with minimality score greater than threshold
         for k in new_res:
             if new_res[k][0] / new_res[k][1] - 1 >= minimality_threshold:
-                if model.config.architectures[0] == "LlamaForCausalLM":
+                if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
                     head = [int(k.split(".")[2]), int(k.split(",")[1][1:-1])]
                 else:
                     head = [int(k.split(".")[4]), int(k.split(",")[1][1:-1])]

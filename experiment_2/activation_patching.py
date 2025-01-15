@@ -115,7 +115,7 @@ def act_patching_main(
                     raw_data=raw_data, batch_size=batch_size
                 )
 
-                if model.config.architectures[0] == "LlamaForCausalLM":
+                if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
                     modules = [
                         f"model.layers.{i}.self_attn.o_proj"
                         for i in range(model.config.num_hidden_layers)

@@ -94,7 +94,7 @@ def dcm_main(
 
         _, head_groups = get_circuit_components(model, circuit_path)
 
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             modules = [
                 f"model.layers.{layer}.self_attn.o_proj"
                 for layer in range(model.config.num_hidden_layers)
@@ -124,7 +124,7 @@ def dcm_main(
             print(f"{desid_name}, {head_group_name} training started...")
             modules_w_heads = []
             for l, h in head_group:
-                if model.config.architectures[0] == "LlamaForCausalLM":
+                if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
                     modules_w_heads.append(f"model.layers.{l}.self_attn.o_proj.{h}")
                 else:
                     modules_w_heads.append(
