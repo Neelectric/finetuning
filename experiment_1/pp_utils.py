@@ -115,7 +115,7 @@ def get_model_and_tokenizer(model_name: str):
         model = LlamaForCausalLM.from_pretrained(path).to(device)
 
     elif model_name == "goat":
-        base_model = "decapoda-research/llama-7b-hf"
+        base_model = "luodian/llama-7b-hf"
         lora_weights = "tiedong/goat-lora-7b"
         model = LlamaForCausalLM.from_pretrained(
             base_model,
@@ -784,9 +784,16 @@ def eval_circuit_performance(
             for bi in range(inp["labels"].size(0)):
                 label = inp["labels"][bi]
                 pred = torch.argmax(outputs.logits[bi][inp["last_token_indices"][bi]])
-
                 if label == pred:
                     correct_count += 1
+                else:
+                    if model.tokenizer:
+                        decoded_prompt = model.tokenizer.decode(inp["input_ids"][bi])
+                        decoded_label = model.tokenizer.decode(label)
+                        decoded_pred = model.tokenizer.decode(pred)
+                        if decoded_label.strip() == decoded_pred.strip():
+                            correct_count += 1
+
                 total_count += 1
 
             del outputs
