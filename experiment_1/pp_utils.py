@@ -10,6 +10,8 @@ import torch
 from transformers import (
     LlamaForCausalLM,
     LlamaTokenizer,
+    AutoModelForCausalLM,
+    AutoTokenizer,
 )
 from baukit import TraceDict, nethook
 from einops import rearrange, einsum
@@ -83,17 +85,16 @@ def get_model_and_tokenizer(model_name: str):
         model_name (str): Name of the model to load.
     """
 
-    tokenizer = LlamaTokenizer.from_pretrained(
-        "hf-internal-testing/llama-tokenizer", padding_side="right"
-    )
-    tokenizer.pad_token_id = tokenizer.eos_token_id
-    tokenizer.padding_side = "right"
-
     if model_name == "llama":
         # path = "/data/nikhil_prakash/llama_weights/7B/"
         # path = "/home/local_nikhil/Projects/llama_weights/7B/"
         path = "luodian/llama-7b-hf"
         model = LlamaForCausalLM.from_pretrained(path).to(device)
+        tokenizer = LlamaTokenizer.from_pretrained(
+            "hf-internal-testing/llama-tokenizer", padding_side="right"
+        )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
 
     elif model_name == "goat":
         base_model = "decapoda-research/llama-7b-hf"
@@ -110,14 +111,42 @@ def get_model_and_tokenizer(model_name: str):
             torch_dtype=torch.float32,
             device_map={"": 0},
         )
+        tokenizer = LlamaTokenizer.from_pretrained(
+            "hf-internal-testing/llama-tokenizer", padding_side="right"
+        )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
 
     elif model_name == "vicuna":
         path = "AlekseyKorshuk/vicuna-7b"
         model = LlamaForCausalLM.from_pretrained(path).to(device)
+        tokenizer = LlamaTokenizer.from_pretrained(
+            "hf-internal-testing/llama-tokenizer", padding_side="right"
+        )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
 
     elif model_name == "float":
         path = "nikhil07prakash/float-7b"
         model = LlamaForCausalLM.from_pretrained(path).to(device)
+        tokenizer = LlamaTokenizer.from_pretrained(
+            "hf-internal-testing/llama-tokenizer", padding_side="right"
+        )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
+
+    elif model_name == "meta-llama/Llama-3.1-8B":
+        model = AutoModelForCausalLM.from_pretrained(
+            "meta-llama/Llama-3.1-8B",
+            torch_dtype=torch.bfloat16,
+            ).to(device)
+        print(model)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "meta-llama/Llama-3.1-8B",
+            padding_side="right",
+            )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
 
     return model, tokenizer
 

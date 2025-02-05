@@ -1,5 +1,6 @@
 import random
 import os
+import json
 import fire
 import numpy as np
 from functools import partial
@@ -146,7 +147,7 @@ def apply_pp(
 def pp_main(
     datafile: str = "../data/dataset.jsonl",
     num_boxes: int = 7,
-    model_name: str = "llama",
+    model_name: str = "meta-llama/Llama-3.1-8B", #meta-llama/Llama-3.1-8B #llama
     num_samples: int = 300,
     n_value_fetcher: int = 20,  # Goat / FLoat circuit: 50, Llama circuit: 20
     n_pos_trans: int = 5,  # Goat / FLoat circuit: 20, Llama circuit: 5
@@ -174,6 +175,7 @@ def pp_main(
         batch_size (int): Batch size to use.
     """
     # Print the arguments
+    output_path = output_path + model_name + "_circuit/"
     print(f"DATAFILE: {datafile}")
     print(f"NUM BOXES: {num_boxes}")
     print(f"MODEL NAME: {model_name}")
@@ -229,6 +231,7 @@ def pp_main(
         rel_pos=0,
     )
     torch.save(patching_scores, output_path + "value_fetcher.pt")
+    # patching_scores = torch.load(output_path + "value_fetcher.pt", weights_only=False)
     value_fetcher_heads = compute_topk_components(
         patching_scores=patching_scores, k=n_value_fetcher, largest=False
     )
@@ -236,7 +239,6 @@ def pp_main(
     # stop the script here, and print the path of where we saved
     print("Current working directory: ", os.getcwd())
     print("Results saved at: ", output_path)
-    return
 
     # Compute Position Transformer Heads
     print("COMPUTING POSITION TRANSMITTER HEADS...")
@@ -255,6 +257,7 @@ def pp_main(
         rel_pos=0,
     )
     torch.save(patching_scores, output_path + "pos_transmitter.pt")
+    # patching_scores = torch.load(output_path + "pos_transmitter.pt", weights_only=False)
     pos_transmitter = compute_topk_components(
         patching_scores=patching_scores, k=n_pos_trans, largest=False
     )
@@ -277,6 +280,7 @@ def pp_main(
         rel_pos=2,
     )
     torch.save(patching_scores, output_path + "pos_detector.pt")
+    # patching_scores = torch.load(output_path + "pos_detector.pt", weights_only=False)
     pos_detector = compute_topk_components(
         patching_scores=patching_scores, k=n_pos_detect, largest=False
     )
@@ -299,11 +303,19 @@ def pp_main(
         rel_pos=-1,
     )
     torch.save(patching_scores, output_path + "struct_reader.pt")
+    # patching_scores = torch.load(output_path + "struct_reader.pt", weights_only=False)
     heads_at_prev_box_pos = compute_topk_components(
         patching_scores=patching_scores, k=n_struct_read, largest=False
     )
     print(f"STRUCTURAL READER HEADS: {heads_at_prev_box_pos}\n")
 
+    results_dict = {
+        "value_fetcher": value_fetcher_heads,
+        "pos_transmitter": pos_transmitter,
+        "pos_detector": pos_detector,
+        "struct_reader": heads_at_prev_box_pos,
+    }
+    json.dump(results_dict, open(output_path + "results.json", "w"))
 
 if __name__ == "__main__":
     fire.Fire(pp_main)
