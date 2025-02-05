@@ -1357,8 +1357,6 @@ def load_pp_data(
             if i + j >= num_samples:
                 break
 
-            # detokenized_base_input_ids = tokenizer.decode(input_ids[i + j])
-            # print(f"Base: {detokenized_base_input_ids}")
 
             all_base_input_ids += [input_ids[i + j]]
             all_base_input_last_pos += [last_token_indices[i + j]]
@@ -1369,9 +1367,6 @@ def load_pp_data(
             )
             random_source_index += (j + 1) % num_boxes
             source_example = input_ids[random_source_index].clone()
-            # detokenized_source_input_ids_pre = tokenizer.decode(source_example)
-            # # print the input_id and the detokenised verison of each token in the source example:
-            # print(f"Source before randomisation : {[[int(input_id), tokenizer.decode(input_id)] for input_id in source_example]}")
 
             # Change the query box label with a random alphabet
             random_alphabet = chr(random.randint(65, 90))
@@ -1386,8 +1381,6 @@ def load_pp_data(
             all_source_input_last_pos += [last_token_indices[random_source_index]]
 
             all_intervention_ids += [0]
-            # detokenized_source_input_ids_post = tokenizer.decode(source_example)
-            # print(f"Source after randomisation : {detokenized_source_input_ids_post}")
 
     return (
         all_base_input_ids,

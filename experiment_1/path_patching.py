@@ -188,7 +188,7 @@ def pp_main(
 
     set_seed(seed)
 
-    model, tokenizer = get_model_and_tokenizer(model_name)
+    model, tokenizer = get_model_and_tokenizer(model_name, device="cuda:1")
     print("MODEL AND TOKENIZER LOADED")
     # just double-checking here that im in the right directory when debugging
     print("Current working directory: ", os.getcwd())

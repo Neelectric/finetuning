@@ -79,7 +79,7 @@ def compute_prev_query_box_pos(input_ids, last_token_index):
     return prev_query_box_token_pos
 
 
-def get_model_and_tokenizer(model_name: str):
+def get_model_and_tokenizer(model_name: str, device = "cuda:0"):
     """
     Loads the model and tokenizer.
 
@@ -98,7 +98,7 @@ def get_model_and_tokenizer(model_name: str):
         model = AutoModelForCausalLM.from_pretrained(
             model_name,
             torch_dtype=torch.bfloat16,
-            device_map="cuda:0", # expects tensors to be on same device at some point...
+            device_map=device, # expects tensors to be on same device at some point...
             )
         return model, tokenizer
     else:
@@ -263,6 +263,9 @@ def get_caches(
 
             corrupt_cache[bi] = cache
             for i in range(batch_size):
+                output_logits = output.logits
+                prompt_logits = output_logits[i]
+                prompt_last_token_logits = prompt_logits[inp["source_last_token_indices"]]
                 logits = apply_softmax(
                     output.logits[i, inp["source_last_token_indices"][i]]
                 )
@@ -747,6 +750,7 @@ def eval_circuit_performance(
     circuit_components: dict,
     mean_activations: dict,
     ablate_non_vital_pos: bool = True,
+    disable_tqdm: bool = False
 ):
     """
     Evaluates the performance of the model/circuit.
@@ -761,7 +765,7 @@ def eval_circuit_performance(
 
     correct_count, total_count = 0, 0
     with torch.no_grad():
-        for _, inp in enumerate(tqdm(dataloader, dynamic_ncols=True)):
+        for _, inp in enumerate(tqdm(dataloader, dynamic_ncols=True, disable=disable_tqdm)):
             for k, v in inp.items():
                 if v is not None and isinstance(v, torch.Tensor):
                     inp[k] = v.to(model.device)
@@ -783,11 +787,15 @@ def eval_circuit_performance(
 
             for bi in range(inp["labels"].size(0)):
                 label = inp["labels"][bi]
+                pred_logits = outputs.logits[bi][inp["last_token_indices"][bi]]
+                # print(pred_logits)
+                pred_logits_key = pred_logits[3756]
+                # print(pred_logits_key)
                 pred = torch.argmax(outputs.logits[bi][inp["last_token_indices"][bi]])
                 if label == pred:
                     correct_count += 1
                 else:
-                    if model.tokenizer:
+                    if hasattr(model, 'tokenizer'):
                         decoded_prompt = model.tokenizer.decode(inp["input_ids"][bi])
                         decoded_label = model.tokenizer.decode(label)
                         decoded_pred = model.tokenizer.decode(pred)
@@ -847,7 +855,7 @@ def get_circuit(
     struct_reader_heads = compute_topk_components(
         torch.load(path, weights_only=True), k=n_struct_read, largest=False
     )
-
+    # this is curious? why are we only removing the intersection between value fetcher and pos transmitter heads?
     intersection = []
     for head in value_fetcher_heads:
         if head in pos_transmitter_heads:
@@ -855,7 +863,7 @@ def get_circuit(
 
     for head in intersection:
         value_fetcher_heads.remove(head)
-
+    # and then here, value_fetcher and pos_transmitter heads are added to the circuit_components[0]?
     for layer_idx, head in value_fetcher_heads:
         if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
@@ -996,7 +1004,7 @@ def compute_pair_drop_values(
 
         circuit_components[rel_pos][layer_1].remove(head_1)
 
-        for layer_idx_2, head_2 in heads:
+        for layer_idx_2, head_2 in tqdm(heads, total=len(heads), desc="Pair drop values inner", dynamic_ncols=True):
             if model.config.architectures[0] == "LlamaForCausalLM" or model.config.architectures[0] == "Cohere2ForCausalLM":
                 layer_2 = f"model.layers.{layer_idx_2}.self_attn.o_proj"
             else:
@@ -1010,7 +1018,7 @@ def compute_pair_drop_values(
                 circuit_components[rel_pos][layer_2].remove(head_2)
 
             greedy_res[(layer_1, head_1)][(layer_2, head_2)] = eval_circuit_performance(
-                model, dataloader, modules, circuit_components, mean_activations
+                model, dataloader, modules, circuit_components, mean_activations, disable_tqdm=True
             )
             if layer_1 is not layer_2 and head_1 is not head_2:
                 circuit_components[rel_pos][layer_2].append(head_2)

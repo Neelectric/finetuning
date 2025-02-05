@@ -1,4 +1,5 @@
 import json
+import os
 import random
 import numpy as np
 import math
@@ -46,10 +47,10 @@ def minimality_main(
     model_name: str = "CohereForAI/c4ai-command-r7b-12-2024", #CohereForAI/c4ai-command-r7b-12-2024
     num_samples: int = 100,
     batch_size: int = 100,
-    n_value_fetcher: int = 101,  # Goat circuit: 101, FLoat circuit: 102, Llama circuit: 58
-    n_pos_trans: int = 30,  # Goat circuit: 30, FLoat circuit: 30, Llama circuit: 10
-    n_pos_detect: int = 50,  # Goat circuit: 50, FLoat circuit: 50, Llama circuit: 25
-    n_struct_read: int = 40,  # Goat circuit: 40, FLoat circuit: 40, Llama circuit: 5
+    n_value_fetcher: int = 180,  # Goat circuit: 101, FLoat circuit: 102, Llama circuit: 58
+    n_pos_trans: int = 100,  # Goat circuit: 30, FLoat circuit: 30, Llama circuit: 10
+    n_pos_detect: int = 150,  # Goat circuit: 50, FLoat circuit: 50, Llama circuit: 25
+    n_struct_read: int = 120,  # Goat circuit: 40, FLoat circuit: 40, Llama circuit: 5
     percentage: float = 0.3,
     minimality_threshold: float = 0.01,
     seed: int = 10,  # Goat circuit: 56, FLoat circuit: 10, Llama circuit: 10
@@ -90,6 +91,12 @@ def minimality_main(
     print(f"RESULTS_PATH: {results_path}")
 
     set_seed(seed)
+
+    # just double-checking here that im in the right directory when debugging
+    print("Current working directory: ", os.getcwd())
+    if os.getcwd() == "/home/user/repos/finetuning":
+        os.chdir("experiment_1")
+    print("Current working directory: ", os.getcwd())
 
     model, tokenizer = get_model_and_tokenizer(model_name)
     dataloader = load_eval_data(
