@@ -149,9 +149,9 @@ def pp_main(
     num_boxes: int = 7,
     model_name: str = "meta-llama/Llama-3.1-8B", #meta-llama/Llama-3.1-8B #llama
     num_samples: int = 300,
-    n_value_fetcher: int = 20,  # Goat / FLoat circuit: 50, Llama circuit: 20
-    n_pos_trans: int = 5,  # Goat / FLoat circuit: 20, Llama circuit: 5
-    n_pos_detect: int = 10,  # Goat / FLoat circuit: 30, Llama circuit: 10
+    n_value_fetcher: int = 40,  # Goat / FLoat circuit: 50, Llama circuit: 20
+    n_pos_trans: int = 7,  # Goat / FLoat circuit: 20, Llama circuit: 5
+    n_pos_detect: int = 20,  # Goat / FLoat circuit: 30, Llama circuit: 10
     n_struct_read: int = 5,  # Goat / FLoat circuit: 5, Llama circuit: 5
     output_path: str = "./results/path_patching/",
     seed: int = 20,  # Goat circuit: 82, FLoat circuit: 85, Llama circuit: 20
@@ -176,6 +176,7 @@ def pp_main(
     """
     # Print the arguments
     output_path = output_path + model_name + "_circuit/"
+    rerun_path_patching = False
     print(f"DATAFILE: {datafile}")
     print(f"NUM BOXES: {num_boxes}")
     print(f"MODEL NAME: {model_name}")
@@ -187,6 +188,7 @@ def pp_main(
     print(f"OUTPUT PATH: {output_path}")
     print(f"SEED: {seed}")
     print(f"BATCH SIZE: {batch_size}\n")
+    print(f"RERUN PATH PATCHING: {rerun_path_patching}\n")
 
     set_seed(seed)
 
@@ -219,45 +221,46 @@ def pp_main(
 
     # Compute Value Fetcher Heads
     print("COMPUTING VALUE FETCHER HEADS...")
-    patching_scores = apply_pp(
-        model=model,
-        clean_cache=clean_cache,
-        corrupt_cache=corrupt_cache,
-        dataloader=dataloader,
-        receiver_heads=[],
-        receiver_layers=[],
-        clean_logit_outputs=clean_logit_outputs,
-        hook_points=hook_points,
-        rel_pos=0,
-    )
-    torch.save(patching_scores, output_path + "value_fetcher.pt")
-    # patching_scores = torch.load(output_path + "value_fetcher.pt", weights_only=False)
+    if rerun_path_patching:
+        patching_scores = apply_pp(
+            model=model,
+            clean_cache=clean_cache,
+            corrupt_cache=corrupt_cache,
+            dataloader=dataloader,
+            receiver_heads=[],
+            receiver_layers=[],
+            clean_logit_outputs=clean_logit_outputs,
+            hook_points=hook_points,
+            rel_pos=0,
+        )
+        torch.save(patching_scores, output_path + "value_fetcher.pt")
+    else:
+        patching_scores = torch.load(output_path + "value_fetcher.pt", weights_only=False)
     value_fetcher_heads = compute_topk_components(
         patching_scores=patching_scores, k=n_value_fetcher, largest=False
     )
     print(f"VALUE FETCHER HEADS: {value_fetcher_heads}\n")
-    # stop the script here, and print the path of where we saved
-    print("Current working directory: ", os.getcwd())
-    print("Results saved at: ", output_path)
 
     # Compute Position Transformer Heads
     print("COMPUTING POSITION TRANSMITTER HEADS...")
     receiver_layers = get_receiver_layers(
         model=model, receiver_heads=value_fetcher_heads, composition="q"
     )
-    patching_scores = apply_pp(
-        model=model,
-        clean_cache=clean_cache,
-        corrupt_cache=corrupt_cache,
-        dataloader=dataloader,
-        receiver_heads=value_fetcher_heads,
-        receiver_layers=receiver_layers,
-        clean_logit_outputs=clean_logit_outputs,
-        hook_points=hook_points,
-        rel_pos=0,
-    )
-    torch.save(patching_scores, output_path + "pos_transmitter.pt")
-    # patching_scores = torch.load(output_path + "pos_transmitter.pt", weights_only=False)
+    if rerun_path_patching:
+        patching_scores = apply_pp(
+            model=model,
+            clean_cache=clean_cache,
+            corrupt_cache=corrupt_cache,
+            dataloader=dataloader,
+            receiver_heads=value_fetcher_heads,
+            receiver_layers=receiver_layers,
+            clean_logit_outputs=clean_logit_outputs,
+            hook_points=hook_points,
+            rel_pos=0,
+        )
+        torch.save(patching_scores, output_path + "pos_transmitter.pt")
+    else:
+        patching_scores = torch.load(output_path + "pos_transmitter.pt", weights_only=False)
     pos_transmitter = compute_topk_components(
         patching_scores=patching_scores, k=n_pos_trans, largest=False
     )
@@ -268,19 +271,21 @@ def pp_main(
     receiver_layers = get_receiver_layers(
         model=model, receiver_heads=pos_transmitter, composition="v"
     )
-    patching_scores = apply_pp(
-        model=model,
-        clean_cache=clean_cache,
-        corrupt_cache=corrupt_cache,
-        dataloader=dataloader,
-        receiver_heads=pos_transmitter,
-        receiver_layers=receiver_layers,
-        clean_logit_outputs=clean_logit_outputs,
-        hook_points=hook_points,
-        rel_pos=2,
-    )
-    torch.save(patching_scores, output_path + "pos_detector.pt")
-    # patching_scores = torch.load(output_path + "pos_detector.pt", weights_only=False)
+    if rerun_path_patching:
+        patching_scores = apply_pp(
+            model=model,
+            clean_cache=clean_cache,
+            corrupt_cache=corrupt_cache,
+            dataloader=dataloader,
+            receiver_heads=pos_transmitter,
+            receiver_layers=receiver_layers,
+            clean_logit_outputs=clean_logit_outputs,
+            hook_points=hook_points,
+            rel_pos=2,
+        )
+        torch.save(patching_scores, output_path + "pos_detector.pt")
+    else:
+        patching_scores = torch.load(output_path + "pos_detector.pt", weights_only=False)
     pos_detector = compute_topk_components(
         patching_scores=patching_scores, k=n_pos_detect, largest=False
     )
@@ -291,19 +296,21 @@ def pp_main(
     receiver_layers = get_receiver_layers(
         model=model, receiver_heads=pos_detector, composition="v"
     )
-    patching_scores = apply_pp(
-        model=model,
-        clean_cache=clean_cache,
-        corrupt_cache=corrupt_cache,
-        dataloader=dataloader,
-        receiver_heads=pos_detector,
-        receiver_layers=receiver_layers,
-        clean_logit_outputs=clean_logit_outputs,
-        hook_points=hook_points,
-        rel_pos=-1,
-    )
-    torch.save(patching_scores, output_path + "struct_reader.pt")
-    # patching_scores = torch.load(output_path + "struct_reader.pt", weights_only=False)
+    if rerun_path_patching:
+        patching_scores = apply_pp(
+            model=model,
+            clean_cache=clean_cache,
+            corrupt_cache=corrupt_cache,
+            dataloader=dataloader,
+            receiver_heads=pos_detector,
+            receiver_layers=receiver_layers,
+            clean_logit_outputs=clean_logit_outputs,
+            hook_points=hook_points,
+            rel_pos=-1,
+        )
+        torch.save(patching_scores, output_path + "struct_reader.pt")
+    else:
+        patching_scores = torch.load(output_path + "struct_reader.pt", weights_only=False)
     heads_at_prev_box_pos = compute_topk_components(
         patching_scores=patching_scores, k=n_struct_read, largest=False
     )
