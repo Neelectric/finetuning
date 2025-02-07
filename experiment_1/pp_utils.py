@@ -1004,7 +1004,7 @@ def compute_pair_drop_values(
 
     greedy_res = defaultdict(lambda: defaultdict(float))
 
-    for layer_idx_1, head_1 in tqdm(heads, total=len(heads), desc="Pair drop values"):
+    for layer_idx_1, head_1 in tqdm(heads, total=len(heads), desc="Pair drop values", dynamic_ncols=True):
         if model.config.architectures[0] == "LlamaForCausalLM":
             layer_1 = f"model.layers.{layer_idx_1}.self_attn.o_proj"
         else:
