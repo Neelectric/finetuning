@@ -40,20 +40,20 @@ def set_seed(seed):
 
 
 def minimality_main(
-    datafile: str = "./data/dataset.jsonl",
-    circuit_root_path: str = "../experiment_1/results/path_patching/llama_circuit",
+    datafile: str = "../data/dataset.jsonl",
+    circuit_root_path: str = "../experiment_1/results/path_patching/meta-llama/Llama-3.1-8B_circuit", #llama_circuit
     num_boxes: int = 7,
-    model_name: str = "llama",
+    model_name: str = "meta-llama/Llama-3.1-8B",
     num_samples: int = 100,
     batch_size: int = 100,
-    n_value_fetcher: int = 101,  # Goat circuit: 101, FLoat circuit: 102, Llama circuit: 58
+    n_value_fetcher: int = 70,  # Goat circuit: 101, FLoat circuit: 102, Llama circuit: 58
     n_pos_trans: int = 30,  # Goat circuit: 30, FLoat circuit: 30, Llama circuit: 10
-    n_pos_detect: int = 50,  # Goat circuit: 50, FLoat circuit: 50, Llama circuit: 25
+    n_pos_detect: int = 40,  # Goat circuit: 50, FLoat circuit: 50, Llama circuit: 25
     n_struct_read: int = 40,  # Goat circuit: 40, FLoat circuit: 40, Llama circuit: 5
     percentage: float = 0.3,
     minimality_threshold: float = 0.01,
-    seed: int = 10,  # Goat circuit: 56, FLoat circuit: 10, Llama circuit: 10
-    results_path: str = "../experiment_1/results/minimality/llama_circuit",
+    seed: int = 20,  # Goat circuit: 56, FLoat circuit: 10, Llama circuit: 10, Llama-3.1-8B_circuit: 20
+    results_path: str = "../experiment_1/results/minimality/meta-llama/Llama-3.1-8B_circuit", #llama_circuit
 ):
     """
     Computes the minimality scores for the heads in the model
@@ -92,6 +92,7 @@ def minimality_main(
     set_seed(seed)
 
     model, tokenizer = get_model_and_tokenizer(model_name)
+    model.tokenizer = tokenizer
     dataloader = load_eval_data(
         tokenizer=tokenizer,
         datafile=datafile,
@@ -187,6 +188,8 @@ def minimality_main(
                     head = [int(k.split(".")[4]), int(k.split(",")[1][1:-1])]
                 minimal_circuit[idx_to_group[idx]].append(head)
 
+    print("Minimal Circuit:")
+    print(minimal_circuit)
     with open(
         f"{results_path}/{model_name}_circuit.json",
         "w",

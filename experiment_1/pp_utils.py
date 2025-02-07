@@ -758,6 +758,7 @@ def eval_circuit_performance(
     mean_activations: dict,
     ablate_non_vital_pos: bool = True,
     print_evals: bool = False,
+    disable_tqdm: bool = False,
 ):
     """
     Evaluates the performance of the model/circuit.
@@ -772,7 +773,7 @@ def eval_circuit_performance(
 
     correct_count, total_count = 0, 0
     with torch.no_grad():
-        for _, inp in enumerate(tqdm(dataloader)):
+        for _, inp in enumerate(tqdm(dataloader, dynamic_ncols=True, disable=disable_tqdm)):
             for k, v in inp.items():
                 if v is not None and isinstance(v, torch.Tensor):
                     inp[k] = v.to(model.device)
@@ -845,22 +846,22 @@ def get_circuit(
 
     path = circuit_root_path + "/value_fetcher.pt"
     value_fetcher_heads = compute_topk_components(
-        torch.load(path), k=n_value_fetcher, largest=False
+        torch.load(path, weights_only=True), k=n_value_fetcher, largest=False
     )
 
     path = circuit_root_path + "/pos_transmitter.pt"
     pos_transmitter_heads = compute_topk_components(
-        torch.load(path), k=n_pos_trans, largest=False
+        torch.load(path, weights_only=True), k=n_pos_trans, largest=False
     )
 
     path = circuit_root_path + "/pos_detector.pt"
     pos_detector_heads = compute_topk_components(
-        torch.load(path), k=n_pos_detect, largest=False
+        torch.load(path, weights_only=True), k=n_pos_detect, largest=False
     )
 
     path = circuit_root_path + "/struct_reader.pt"
     struct_reader_heads = compute_topk_components(
-        torch.load(path), k=n_struct_read, largest=False
+        torch.load(path, weights_only=True), k=n_struct_read, largest=False
     )
 
     intersection = []
@@ -1025,7 +1026,7 @@ def compute_pair_drop_values(
                 circuit_components[rel_pos][layer_2].remove(head_2)
 
             greedy_res[(layer_1, head_1)][(layer_2, head_2)] = eval_circuit_performance(
-                model, dataloader, modules, circuit_components, mean_activations
+                model, dataloader, modules, circuit_components, mean_activations, disable_tqdm=True,
             )
             if layer_1 is not layer_2 and head_1 is not head_2:
                 circuit_components[rel_pos][layer_2].append(head_2)
