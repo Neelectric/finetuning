@@ -149,10 +149,10 @@ def pp_main(
     num_boxes: int = 7,
     model_name: str = "meta-llama/Llama-3.1-8B", #meta-llama/Llama-3.1-8B #llama
     num_samples: int = 300,
-    n_value_fetcher: int = 40,  # Goat / FLoat circuit: 50, Llama circuit: 20
-    n_pos_trans: int = 7,  # Goat / FLoat circuit: 20, Llama circuit: 5
-    n_pos_detect: int = 20,  # Goat / FLoat circuit: 30, Llama circuit: 10
-    n_struct_read: int = 5,  # Goat / FLoat circuit: 5, Llama circuit: 5
+    n_value_fetcher: int = 100,  # Goat / FLoat circuit: 50, Llama circuit: 20
+    n_pos_trans: int = 100,  # Goat / FLoat circuit: 20, Llama circuit: 5
+    n_pos_detect: int = 100,  # Goat / FLoat circuit: 30, Llama circuit: 10
+    n_struct_read: int = 100,  # Goat / FLoat circuit: 5, Llama circuit: 5
     output_path: str = "./results/path_patching/",
     seed: int = 20,  # Goat circuit: 82, FLoat circuit: 85, Llama circuit: 20
     batch_size: int = 100,

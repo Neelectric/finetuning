@@ -757,6 +757,7 @@ def eval_circuit_performance(
     circuit_components: dict,
     mean_activations: dict,
     ablate_non_vital_pos: bool = True,
+    print_evals: bool = False,
 ):
     """
     Evaluates the performance of the model/circuit.
@@ -797,6 +798,17 @@ def eval_circuit_performance(
 
                 if label == pred:
                     correct_count += 1
+                else:
+                    if hasattr(model, "tokenizer"):
+                        decoded_label = model.tokenizer.decode(label)
+                        decoded_pred = model.tokenizer.decode(pred)
+                        decoded_prompt = model.tokenizer.decode(inp["input_ids"][bi])
+                    if decoded_label.strip() == decoded_pred.strip():
+                        correct_count += 1
+                    elif decoded_pred != " key":
+                        if print_evals:
+                            print(f"Prompt: {decoded_prompt}")
+                            print(f"Correct: {decoded_label}, Predicted: {decoded_pred}")
                 total_count += 1
 
             del outputs
