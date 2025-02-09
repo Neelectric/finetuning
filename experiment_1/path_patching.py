@@ -176,7 +176,7 @@ def pp_main(
     """
     # Print the arguments
     output_path = output_path + model_name + "_circuit/"
-    rerun_path_patching = False
+    rerun_path_patching = True
     print(f"DATAFILE: {datafile}")
     print(f"NUM BOXES: {num_boxes}")
     print(f"MODEL NAME: {model_name}")

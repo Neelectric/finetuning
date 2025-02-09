@@ -1089,11 +1089,11 @@ def get_head_significance_score(
             circuit_components[rel_pos][top_layer].remove(top_head)
 
         before = eval_circuit_performance(
-            model, dataloader, modules, circuit_components, mean_activations
+            model, dataloader, modules, circuit_components, mean_activations, disable_tqdm=True,
         )
         circuit_components[rel_pos][layer].remove(head)
         after = eval_circuit_performance(
-            model, dataloader, modules, circuit_components, mean_activations
+            model, dataloader, modules, circuit_components, mean_activations, disable_tqdm=True,
         )
         res[(layer, head)] = (before, after)
 

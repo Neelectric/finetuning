@@ -1303,7 +1303,7 @@ def sample_box_data(tokenizer, num_samples, data_file):
     i = 0
     num_suitable = 0
 
-    while num_suitable < num_samples:
+    while num_suitable < num_samples: #adapted this instead to make sure i only include samples with 1-token labels
         label = data[i]["sentence"].split(" ")[-1][:-1]
         prompt = " ".join(data[i]["sentence"].split(" ")[:-1])
         
