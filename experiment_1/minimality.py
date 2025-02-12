@@ -41,9 +41,9 @@ def set_seed(seed):
 
 def minimality_main(
     datafile: str = "../data/dataset.jsonl",
-    circuit_root_path: str = "../experiment_1/results/path_patching/meta-llama/Llama-3.1-8B-Instruct_circuit", #llama_circuit
+    circuit_root_path: str = "../experiment_1/results/path_patching/deepseek-ai/DeepSeek-R1-Distill-Llama-8B_circuit", #llama_circuit
     num_boxes: int = 7,
-    model_name: str = "meta-llama/Llama-3.1-8B-Instruct",
+    model_name: str = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
     num_samples: int = 100,
     batch_size: int = 100,
     n_value_fetcher: int = 70,  # Goat circuit: 101, FLoat circuit: 102, Llama circuit: 58
@@ -53,7 +53,7 @@ def minimality_main(
     percentage: float = 0.3,
     minimality_threshold: float = 0.01,
     seed: int = 20,  # Goat circuit: 56, FLoat circuit: 10, Llama circuit: 10, Llama-3.1-8B_circuit: 20
-    results_path: str = "../experiment_1/results/minimality/meta-llama/Llama-3.1-8B-Instruct_circuit", #llama_circuit
+    results_path: str = "../experiment_1/results/minimality/deepseek-ai/DeepSeek-R1-Distill-Llama-8B_circuit", #llama_circuit
 ):
     """
     Computes the minimality scores for the heads in the model
@@ -191,7 +191,7 @@ def minimality_main(
     print("Minimal Circuit:")
     print(minimal_circuit)
     with open(
-        f"{results_path}/_circuit.json",
+        f"{results_path}/results.json",
         "w",
         encoding="utf-8",
     ) as f:

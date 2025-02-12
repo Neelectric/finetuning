@@ -163,7 +163,7 @@ def get_model_and_tokenizer(model_name: str):
         model = AutoModelForCausalLM.from_pretrained(
             "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
             torch_dtype=torch.bfloat16,
-            ).to("cuda:1")
+            ).to(device)
         tokenizer = AutoTokenizer.from_pretrained(
             "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
             padding_side="right",
