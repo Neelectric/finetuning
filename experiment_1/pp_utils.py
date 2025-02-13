@@ -219,7 +219,6 @@ def get_model_and_tokenizer(model_name: str):
         tokenizer.pad_token_id = tokenizer.eos_token_id
         tokenizer.padding_side = "right"
     
-
     return model, tokenizer
 
 

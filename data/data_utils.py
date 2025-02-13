@@ -1308,14 +1308,23 @@ def sample_box_data(tokenizer, num_samples, data_file):
         prompt = " ".join(data[i]["sentence"].split(" ")[:-1])
         
         encoded = tokenizer.encode(label)
-        if len(encoded) == 2:
-            num_suitable += 1
-            decoded = [tokenizer.decode(input_id) for input_id in encoded]
-            labels.append(encoded[1])
-            prompts.append(prompt)
-            # print(f"raw label: {label}")
-            # print(f"label encoded, and then decoded: {decoded}")
-        i += 1
+        if "llama" in tokenizer.name_or_path.lower():
+            if len(encoded) == 2:
+                num_suitable += 1
+                decoded = [tokenizer.decode(input_id) for input_id in encoded]
+                labels.append(encoded[1])
+                prompts.append(prompt)
+                # print(f"raw label: {label}")
+                # print(f"label encoded, and then decoded: {decoded}")
+            i += 1
+        elif "olmo" in tokenizer.name_or_path.lower():
+            if len(encoded) == 1:
+                num_suitable += 1
+                labels.append(encoded[0])
+                prompts.append(prompt)
+            i += 1
+        else:
+            raise ValueError("Tokenizer not recognized")
 
     # for i in range(num_samples): # original code, doesn't work with non llama-1 tokenizers
     #     label = data[i]["sentence"].split(" ")[-1][:-1]
