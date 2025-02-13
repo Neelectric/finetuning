@@ -170,6 +170,56 @@ def get_model_and_tokenizer(model_name: str):
             )
         tokenizer.pad_token_id = tokenizer.eos_token_id
         tokenizer.padding_side = "right"
+
+    elif model_name == "allenai/OLMo-2-1124-7B":
+        model = AutoModelForCausalLM.from_pretrained(
+            "allenai/OLMo-2-1124-7B",
+            torch_dtype=torch.bfloat16,
+            ).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "allenai/OLMo-2-1124-7B",
+            padding_side="right",
+            )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
+
+    elif model_name == "allenai/OLMo-2-1124-7B-SFT":
+        model = AutoModelForCausalLM.from_pretrained(
+            "allenai/OLMo-2-1124-7B-SFT",
+            torch_dtype=torch.bfloat16,
+            ).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "allenai/OLMo-2-1124-7B-SFT",
+            padding_side="right",
+            )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
+
+    elif model_name == "allenai/OLMo-2-1124-7B-DPO":
+        model = AutoModelForCausalLM.from_pretrained(
+            "allenai/OLMo-2-1124-7B-DPO",
+            torch_dtype=torch.bfloat16,
+            ).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "allenai/OLMo-2-1124-7B-DPO",
+            padding_side="right",
+            )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
+
+    elif model_name == "allenai/OLMo-2-1124-7B-Instruct":
+        model = AutoModelForCausalLM.from_pretrained(
+            "allenai/OLMo-2-1124-7B-Instruct",
+            torch_dtype=torch.bfloat16,
+            ).to(device)
+        tokenizer = AutoTokenizer.from_pretrained(
+            "allenai/OLMo-2-1124-7B-Instruct",
+            padding_side="right",
+            )
+        tokenizer.pad_token_id = tokenizer.eos_token_id
+        tokenizer.padding_side = "right"
+    
+
     return model, tokenizer
 
 
