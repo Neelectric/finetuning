@@ -16,6 +16,7 @@ from pp_utils import (
 )
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+llama_like_architectures = ["LlamaForCausalLM", 'Olmo2ForCausalLM', "Cohere2ForCausalLM"]
 
 idx_to_group = {
     0: "struct_reader",
@@ -182,7 +183,8 @@ def minimality_main(
         # Selecting heads with minimality score greater than threshold
         for k in new_res:
             if new_res[k][0] / new_res[k][1] - 1 >= minimality_threshold:
-                if model.config.architectures[0] == "LlamaForCausalLM":
+                # if model.config.architectures[0] == "LlamaForCausalLM":
+                if model.config.architectures[0] in llama_like_architectures:
                     head = [int(k.split(".")[2]), int(k.split(",")[1][1:-1])]
                 else:
                     head = [int(k.split(".")[4]), int(k.split(",")[1][1:-1])]

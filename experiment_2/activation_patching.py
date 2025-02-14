@@ -22,6 +22,7 @@ sys.path.append(parent_dir)
 from data.data_utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+llama_like_architectures = ["LlamaForCausalLM", "Olmo2ForCausalLM", "Cohere2ForCausalLM"]
 random.seed(20)
 torch.manual_seed(20)
 
@@ -115,7 +116,8 @@ def act_patching_main(
                     raw_data=raw_data, batch_size=batch_size
                 )
 
-                if model.config.architectures[0] == "LlamaForCausalLM":
+                # if model.config.architectures[0] == "LlamaForCausalLM":
+                if model.config.architectures[0] in llama_like_architectures:
                     modules = [
                         f"model.layers.{i}.self_attn.o_proj"
                         for i in range(model.config.num_hidden_layers)

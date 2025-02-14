@@ -1385,9 +1385,14 @@ def load_pp_data(
 
             # Change the query box label with a random alphabet
             random_alphabet = chr(random.randint(65, 90))
-            random_alphabet_token = tokenizer(
-                random_alphabet, return_tensors="pt"
-            ).input_ids[0, 1]
+            if "llama" in tokenizer.name_or_path.lower():
+                random_alphabet_token = tokenizer(
+                    random_alphabet, return_tensors="pt"
+                ).input_ids[0, 1]
+            elif "olmo" in tokenizer.name_or_path.lower():
+                random_alphabet_token = tokenizer(
+                    random_alphabet, return_tensors="pt"
+                ).input_ids[0]
             source_example[-3] = random_alphabet_token
 
             all_source_input_ids += [source_example]

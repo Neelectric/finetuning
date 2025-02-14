@@ -24,6 +24,7 @@ sys.path.append(parent_dir)
 from data.data_utils import *
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+llama_like_architectures = ["LlamaForCausalLM", "Olmo2ForCausalLM", "Cohere2ForCausalLM"]
 torch.manual_seed(20)
 
 relative_pos = {
@@ -94,7 +95,8 @@ def dcm_main(
 
         _, head_groups = get_circuit_components(model, circuit_path)
 
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             modules = [
                 f"model.layers.{layer}.self_attn.o_proj"
                 for layer in range(model.config.num_hidden_layers)
@@ -124,7 +126,8 @@ def dcm_main(
             print(f"{desid_name}, {head_group_name} training started...")
             modules_w_heads = []
             for l, h in head_group:
-                if model.config.architectures[0] == "LlamaForCausalLM":
+                # if model.config.architectures[0] == "LlamaForCausalLM":
+                if model.config.architectures[0] in llama_like_architectures:
                     modules_w_heads.append(f"model.layers.{l}.self_attn.o_proj.{h}")
                 else:
                     modules_w_heads.append(

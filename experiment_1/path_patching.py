@@ -147,7 +147,7 @@ def apply_pp(
 def pp_main(
     datafile: str = "../data/dataset.jsonl",
     num_boxes: int = 7,
-    model_name: str = "deepseek-ai/DeepSeek-R1-Distill-Llama-8B", #meta-llama/Llama-3.1-8B #llama
+    model_name: str = "allenai/OLMo-2-1124-7B", #meta-llama/Llama-3.1-8B #llama
     num_samples: int = 300,
     n_value_fetcher: int = 70,  # Goat / FLoat circuit: 50, Llama circuit: 20
     n_pos_trans: int = 30,  # Goat / FLoat circuit: 20, Llama circuit: 5

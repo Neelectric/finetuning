@@ -20,6 +20,7 @@ sys.path.append(parent_dir)
 from data.data_utils import *
 
 torch.manual_seed(20)
+llama_like_architectures = ["LlamaForCausalLM", 'Olmo2ForCausalLM', "Cohere2ForCausalLM"]
 
 
 def get_model_and_tokenizer(model_name: str, device: str = "cuda"):
@@ -391,28 +392,32 @@ def get_circuit_components(model, circuit_path):
     print(f"Structure Reader Heads: {len(struct_reader)}")
 
     for layer_idx, head in value_fetcher:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[0][layer].append(head)
 
     for layer_idx, head in pos_transmitter:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[0][layer].append(head)
 
     for layer_idx, head in pos_detector:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
         circuit_components[2][layer].append(head)
 
     for layer_idx, head in struct_reader:
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             layer = f"model.layers.{layer_idx}.self_attn.o_proj"
         else:
             layer = f"base_model.model.model.layers.{layer_idx}.self_attn.o_proj"
@@ -444,7 +449,8 @@ def compute_heads_from_mask(
 
     for mask_idx in (rounded == 0).nonzero()[:, 0]:
         layer = inverse_mask_dict[mask_idx.item()]
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             layer_idx = int(layer.split(".")[2])
         else:
             layer_idx = int(layer.split(".")[4])
@@ -522,7 +528,8 @@ def activation_patching(
     )
 
     for rel_pos in patching_heads.keys():
-        if model.config.architectures[0] == "LlamaForCausalLM":
+        # if model.config.architectures[0] == "LlamaForCausalLM":
+        if model.config.architectures[0] in llama_like_architectures:
             layer_index = int(layer.split(".")[2])
         else:
             layer_index = int(layer.split(".")[4])
