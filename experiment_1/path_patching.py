@@ -241,7 +241,7 @@ def pp_main(
     )
     print(f"VALUE FETCHER HEADS: {value_fetcher_heads}\n")
 
-    # Compute Position Transformer Heads
+    # Compute Position Transmitter Heads
     print("COMPUTING POSITION TRANSMITTER HEADS...")
     receiver_layers = get_receiver_layers(
         model=model, receiver_heads=value_fetcher_heads, composition="q"
