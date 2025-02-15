@@ -322,7 +322,7 @@ def pp_main(
         "pos_detector": pos_detector,
         "struct_reader": heads_at_prev_box_pos,
     }
-    for component in results_dict:
+    for component in results_dict.values():
         component.sort()
     json.dump(results_dict, open(output_path + "results.json", "w"))
 
